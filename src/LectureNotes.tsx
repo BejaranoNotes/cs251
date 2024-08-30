@@ -61,7 +61,6 @@ const LectureNotes: React.FC = () => {
           close={() => setIsOpen(false)}
           slides={images.map((src) => ({ src }))}
           index={photoIndex}
-          onIndexChange={(newIndex) => setPhotoIndex(newIndex)}
         />
       )}
     </div>

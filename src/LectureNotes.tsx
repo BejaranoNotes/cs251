@@ -24,8 +24,8 @@ const LectureNotes: React.FC = () => {
     }
   })
 
-  const [isOpen, setIsOpen] = useState(false)
-  const [photoIndex, setPhotoIndex] = useState(0)
+  const [isOpen, setIsOpen] = useState<boolean>(false)
+  const [photoIndex, setPhotoIndex] = useState<number>(0)
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-gray-100 p-6">
@@ -61,9 +61,7 @@ const LectureNotes: React.FC = () => {
           close={() => setIsOpen(false)}
           slides={images.map((src) => ({ src }))}
           index={photoIndex}
-          on={{
-            slideChange: ({ index }) => setPhotoIndex(index),
-          }}
+          onIndexChange={(newIndex) => setPhotoIndex(newIndex)}
         />
       )}
     </div>

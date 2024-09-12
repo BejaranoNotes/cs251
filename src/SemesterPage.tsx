@@ -19,14 +19,12 @@ const SemesterPage: React.FC = () => {
   Object.keys(notes).forEach((path) => {
     const match = path.match(new RegExp(`/notes/${semester}/([^/]+)/([^/]+)/`))
     if (match) {
-      console.log("match", match)
       const week = match[1]
       const date = match[2]
       if (!weeksMap.has(week)) {
         weeksMap.set(week, new Set<string>())
       }
       weeksMap.get(week)?.add(date)
-      console.log(weeksMap)
     }
   })
 
@@ -46,7 +44,6 @@ const SemesterPage: React.FC = () => {
                 return dateA.getTime() - dateB.getTime()
               })
               .map((date) => {
-                console.log(date)
                 const fullDateStr = getFullDate(semester!, date)
                 const parsedDate = parse(fullDateStr, "yyyy-M-d", new Date())
                 const dayOfWeek = format(parsedDate, "EEEE")

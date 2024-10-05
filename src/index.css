@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .custom-light-gallery {
+    @apply bg-transparent;
+  }
+
+  .custom-light-gallery .lg-backdrop {
+    @apply bg-white bg-opacity-90 !important;
+  }
+
+  .custom-light-gallery .lg-outer {
+    @apply mx-auto w-4/5;
+  }
+
+  .custom-light-gallery .lg-thumb-outer {
+    @apply bg-transparent;
+  }
+
+  .custom-light-gallery .lg-thumb-item {
+    @apply rounded-none border-2 border-gray-300;
+  }
+
+  .custom-light-gallery .lg-thumb-item.active,
+  .custom-light-gallery .lg-thumb-item:hover {
+    @apply border-blue-500;
+  }
+}
+
+@layer base {
+  :root {
+
+    --radius: 0.5rem
+  }
+}

@@ -19,7 +19,7 @@ const HomePage: React.FC = () => {
   const semesterLinks = Array.from(semesterSet)
 
   return (
-    <div>
+    <div className="p-3">
       <h1 className="text-2xl font-medium">
         Professor Bejarano's CS251 Lecture Notes
       </h1>

@@ -55,7 +55,7 @@ const SemesterPage: React.FC = () => {
   }, [semester])
 
   return (
-    <div>
+    <div className="p-3">
       <h1 className="text-2xl font-medium">
         Professor Bejarano's CS251 Lecture Notes ({getSemesterName(semester!)})
       </h1>

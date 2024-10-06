@@ -151,7 +151,7 @@ const LectureNotes: React.FC = () => {
             defaultSize={15}
             minSize={10}
             style={{ overflow: "" }}
-            className="h-screen overflow-y-auto bg-gray-300 p-4"
+            className="h-screen overflow-y-auto bg-gray-100 p-4"
           >
             <NavigationSidebar />
           </ResizablePanel>
@@ -248,7 +248,7 @@ const LectureNotes: React.FC = () => {
             defaultSize={15}
             minSize={10}
             style={{ overflow: "" }}
-            className="h-screen overflow-y-auto bg-gray-300 p-7"
+            className="h-screen overflow-y-auto bg-gray-100 p-7"
           >
             <ThumbnailSidebar
               images={images}

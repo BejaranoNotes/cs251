@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
+import { format, parse } from "date-fns"
 import {
   PanelLeftClose,
   PanelLeftOpen,
@@ -14,24 +15,46 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "./components/ui/resizable"
-import { formatDate, getSemesterName } from "./lib/utils"
+import { formatDate, getFullDate } from "./lib/utils"
 import NavigationSidebar from "./NavigationSidebar"
 import ThumbnailSidebar from "./ThumbnailSidebar"
 
-const notes: Record<string, () => Promise<unknown>> = import.meta.glob(
-  "/public/notes/*/*/*/*"
+const imageFiles = import.meta.glob("/public/notes/*/*/*/*.{jpg,jpeg,png,gif}")
+const metadataFiles = import.meta.glob<{ topic: string }>(
+  "/public/notes/*/*/*/metadata.json"
 )
 
 const LectureNotes: React.FC = () => {
   const { semester, date } = useParams<{ semester: string; date: string }>()
-  const images: string[] = []
-  Object.keys(notes).forEach((path) => {
-    const match = path.match(new RegExp(`notes/${semester}/([^/]+)/${date}/`))
-    if (match) {
-      images.push(`${import.meta.env.BASE_URL}${path.replace("/public", "")}`)
-    }
-  })
+  const [images, setImages] = useState<string[]>([])
+  const [topic, setTopic] = useState<string>("")
 
+  /* Render Images and Fetch Topic */
+  useEffect(() => {
+    const loadImagesAndTopic = async () => {
+      const imagePaths = Object.keys(imageFiles).filter((path) =>
+        path.match(new RegExp(`notes/${semester}/[^/]+/${date}/`))
+      )
+      setImages(
+        imagePaths.map(
+          (path) => `${import.meta.env.BASE_URL}${path.replace("/public", "")}`
+        )
+      )
+
+      const metadataPath = Object.keys(metadataFiles).find((path) =>
+        path.match(new RegExp(`notes/${semester}/[^/]+/${date}/metadata.json`))
+      )
+      if (metadataPath) {
+        const metadata = await metadataFiles[metadataPath]()
+        setTopic(metadata.topic)
+      } else {
+        setTopic("No topic available")
+      }
+    }
+    loadImagesAndTopic()
+  }, [semester, date])
+
+  /* Sidebar */
   const [showNavSidebar, setShowNavSidebar] = useState(window.innerWidth > 768)
   const [showThumbnailSidebar, setShowThumbnailSidebar] = useState(
     window.innerWidth > 768
@@ -40,6 +63,7 @@ const LectureNotes: React.FC = () => {
   const toggleThumbnailSidebar = () =>
     setShowThumbnailSidebar(!showThumbnailSidebar)
 
+  /* Scroll & Zoom */
   const contentRef = useRef<HTMLDivElement>(null)
   const [zoomLevel, setZoomLevel] = useState(100)
   const [currentPage, setCurrentPage] = useState(1)
@@ -109,6 +133,11 @@ const LectureNotes: React.FC = () => {
     setZoomLevel((prevZoom) => Math.max(prevZoom - 10, 50))
   }
 
+  /* day of week */
+  const fullDateStr = getFullDate(semester!, date!)
+  const parsedDate = parse(fullDateStr, "yyyy-M-d", new Date())
+  const dayOfWeek = format(parsedDate, "EEEE")
+
   return (
     <ResizablePanelGroup
       direction="horizontal"
@@ -150,9 +179,10 @@ const LectureNotes: React.FC = () => {
                 )}
               </button>
             </div>
-            <h1 className="text-xl font-semibold text-gray-300">
-              {formatDate(date!)} {getSemesterName(semester!)}
-            </h1>
+            <h1 className="text-xl font-semibold text-gray-300">{topic} </h1>
+            <h2 className="ml-2 text-lg text-gray-300">
+              ({dayOfWeek}, {formatDate(date!)})
+            </h2>
             <div className="flex flex-1 items-center justify-end space-x-2">
               <button
                 onClick={handleZoomOut}

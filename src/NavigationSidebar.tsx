@@ -1,33 +1,50 @@
 import React, { useEffect, useState } from "react"
-import { format, parse } from "date-fns"
 import { Link, useParams } from "react-router-dom"
 
-import { formatDate, formatWeek, getFullDate } from "./lib/utils"
+import { formatWeek } from "./lib/utils"
 
-const notes: Record<string, () => Promise<unknown>> = import.meta.glob(
-  "/public/notes/*/*/*/*"
+interface Metadata {
+  topic: string
+}
+
+const metadataFiles = import.meta.glob<Metadata>(
+  "/public/notes/*/*/*/metadata.json"
 )
 
 const NavigationSidebar: React.FC = () => {
   const { semester, date } = useParams<{ semester: string; date: string }>()
-  const [weeksMap, setWeeksMap] = useState<Map<string, Set<string>>>(new Map())
+  const [weeksMap, setWeeksMap] = useState<Map<string, Map<string, string>>>(
+    new Map()
+  )
 
   useEffect(() => {
-    const newWeeksMap = new Map<string, Set<string>>()
-    Object.keys(notes).forEach((path) => {
-      const match = path.match(
-        new RegExp(`/notes/${semester}/([^/]+)/([^/]+)/`)
-      )
-      if (match) {
-        const week = match[1]
-        const dateStr = match[2]
-        if (!newWeeksMap.has(week)) {
-          newWeeksMap.set(week, new Set<string>())
+    const loadMetadata = async () => {
+      const newWeeksMap = new Map<string, Map<string, string>>()
+
+      for (const [path, importFn] of Object.entries(metadataFiles)) {
+        const match = path.match(
+          new RegExp(`/notes/${semester}/([^/]+)/([^/]+)/`)
+        )
+        if (match) {
+          const [, week, dateStr] = match
+          if (!newWeeksMap.has(week)) {
+            newWeeksMap.set(week, new Map<string, string>())
+          }
+
+          try {
+            const metadata = await importFn()
+            newWeeksMap.get(week)?.set(dateStr, metadata.topic)
+          } catch (error) {
+            console.error(`Error loading metadata for ${path}:`, error)
+            newWeeksMap.get(week)?.set(dateStr, "Unknown Topic")
+          }
         }
-        newWeeksMap.get(week)?.add(dateStr)
       }
-    })
-    setWeeksMap(newWeeksMap)
+
+      setWeeksMap(newWeeksMap)
+    }
+
+    loadMetadata()
   }, [semester])
 
   return (
@@ -36,24 +53,19 @@ const NavigationSidebar: React.FC = () => {
         <div key={week} className="mb-4">
           <h3 className="font-medium">{formatWeek(week)}</h3>
           <ul>
-            {Array.from(dates).map((dateStr) => {
-              const fullDateStr = getFullDate(semester!, dateStr)
-              const parsedDate = parse(fullDateStr, "yyyy-M-d", new Date())
-              const dayOfWeek = format(parsedDate, "EEEE")
-              return (
-                <li
-                  key={dateStr}
-                  className={`mb-2 ${dateStr === date ? "font-bold" : ""}`}
+            {Array.from(dates.entries()).map(([dateStr, topic]) => (
+              <li
+                key={dateStr}
+                className={`mb-2 ${dateStr === date ? "font-bold" : ""}`}
+              >
+                <Link
+                  to={`/${semester}/${dateStr}`}
+                  className="block text-blue-600 hover:underline"
                 >
-                  <Link
-                    to={`/${semester}/${dateStr}`}
-                    className="block text-blue-600 hover:underline"
-                  >
-                    {formatDate(dateStr)} ({dayOfWeek})
-                  </Link>
-                </li>
-              )
-            })}
+                  {topic}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
       ))}

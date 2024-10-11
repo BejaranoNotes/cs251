@@ -12,6 +12,9 @@ import {
 interface Metadata {
   topic: string
 }
+const metadataFiles = import.meta.glob<Metadata>(
+  "/public/notes/*/*/*/metadata.json"
+)
 
 const SemesterPage: React.FC = () => {
   const { semester } = useParams<{ semester: string }>()
@@ -22,10 +25,6 @@ const SemesterPage: React.FC = () => {
   useEffect(() => {
     const loadMetadata = async () => {
       const newWeeksMap = new Map<string, Map<string, string>>()
-
-      const metadataFiles = import.meta.glob<Metadata>(
-        "/public/notes/*/*/*/metadata.json"
-      )
 
       for (const [path, importFn] of Object.entries(metadataFiles)) {
         const match = path.match(
